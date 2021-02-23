@@ -1,5 +1,6 @@
 import ICompletion from "@/interfaces/ICompletion"
 import ICompletionResponse from "@/interfaces/ICompletionResponse"
+import CompletionResponse from "@/classes/CompletionResponse"
 import { Secret } from "@/secret.ts"
 export default class CompletionBuilder {
   prompt: string
@@ -8,7 +9,7 @@ export default class CompletionBuilder {
   max_tokens: number
   apiKey: string | undefined
   completion: ICompletion | undefined
-
+  lastResponse: CompletionResponse | undefined
   constructor(
     prompt: string,
     engine: string,
@@ -21,11 +22,12 @@ export default class CompletionBuilder {
     this.max_tokens = max_tokens
     if (Secret) this.apiKey = Secret.key
   }
+
   getCompletion(): ICompletion {
     const body: ICompletion = {
       prompt: this.prompt,
       stop: ".",
-      max_tokens: 1024
+      max_tokens: this.max_tokens
     }
     return body
   }
@@ -62,26 +64,8 @@ export default class CompletionBuilder {
         else return ""
       })
   }
-  runCompletion(): Promise<any> {
-    // const contentFilterUrl =
-    //   "https://api.openai.com/v1/engines/content-filter-alpha-c4/completions"
+  runCompletion(textToFilter?: string | null): Promise<any> {
     const engineUrl = `https://api.openai.com/v1/engines/${this.engine}/completions`
-
-    // const filterCompletion: ICompletion = {
-    //   max_tokens: 1,
-    //   temperature: 0.0,
-    //   top_p: 0,
-    //   logprobs: 3,
-    //   prompt: `<|endoftext|>[${this.prompt}]\n--\nLabel:`
-    // }
-
-    // const filterOptions = {
-    //   method: "POST",
-    //   mode: undefined,
-    //   credentials: undefined,
-    //   headers: this.getHeaders(),
-    //   body: JSON.stringify(filterCompletion)
-    // }
     const options = {
       method: "POST",
       mode: undefined,
@@ -89,14 +73,42 @@ export default class CompletionBuilder {
       headers: this.getHeaders(),
       body: JSON.stringify(this.getCompletion())
     }
-    //Note: mybe just run the question through the filter?
-    return fetch(engineUrl, options)
-      .then(response => {
-        return response.json()
-      })
-      .then((data: ICompletionResponse) => {
-        console.log(JSON.stringify(data))
-        return data
-      })
+    let completionResponse = new CompletionResponse()
+    if (textToFilter && textToFilter.length > 0) {
+      return this.runContentFilter(textToFilter).then(
+        (filter: string | undefined) => {
+          if (filter !== "2") {
+            return fetch(engineUrl, options)
+              .then(response => {
+                return response.json()
+              })
+              .then((data: ICompletionResponse) => {
+                console.log(JSON.stringify(data))
+                completionResponse = new CompletionResponse(data)
+                return data
+              })
+          } else {
+            completionResponse.choices = [
+              {
+                text:
+                  "Try asking again with different wording. The content filter has flagged this question.",
+                index: 0,
+                logprobs: null,
+                finish_reason: "failed content filter"
+              }
+            ]
+            return completionResponse
+          }
+        }
+      )
+    } else
+      return fetch(engineUrl, options)
+        .then(response => {
+          return response.json()
+        })
+        .then((data: ICompletionResponse) => {
+          console.log(JSON.stringify(data))
+          return data
+        })
   }
 }

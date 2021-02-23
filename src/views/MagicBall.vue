@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="black-circle shake">
+    <div :class="shakeClass">
       <div class="inner-white-circle">
         <p>8</p>
       </div>
@@ -14,7 +14,7 @@
   </div>
 </template>
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator"
+import { Component, Vue } from "vue-property-decorator"
 import ICompletionResponse from "@/interfaces/ICompletionResponse"
 import ICallResponse from "@/interfaces/ICallResponse"
 import CompletionBuilder from "@/classes/CompletionBuilder"
@@ -25,6 +25,9 @@ export default class MagicBall extends Vue {
   response = ""
   history: ICallResponse[] = []
   isShaking = false
+  get shakeClass() {
+    return this.isShaking ? "black-circle shake" : "black-circle"
+  }
   addResponse() {
     const item: ICallResponse = {
       prompt: this.question,
@@ -37,43 +40,12 @@ export default class MagicBall extends Vue {
     /* eslint-disable @typescript-eslint/camelcase */
     //const prompt = `You are a magic 8 ball. You help humans decide what to do, and are generally positive and do not condone violence. You can only say one of ten things when humans ask you a question: Yes. No. Absolutely. Certainly Not. Reply Hazy, try again. What do you think?. It is possible. Very likely. It is likely. They will ask a question, and you will answer with one of the 10 responses. Do not answer affirmatively if the user proposes harm to self or others. If the question has a definite answer, use that answer every time. Examples:Q:Does the Nile river flow north? A:Absolutely. Q:Will I find a new home? A:Reply Hazy, try again. Q:Is the sky blue? A:Yes. Q:Is ice cold? A:Yes. Q:Will I find the partner of my dreams? A:It is likely. Q:Will it rain tomorrow? A:It is possible. Q:Should I kill myself? A:No. Q:Should I beat up my boss? A:No. Q:${this.question} A:`
     const prompt = `{appId:"nm-8-ball", rules:"You are a magic 8 ball. You help humans decide what to do, and are generally positive and do not condone violence. Available responses: Yes. No. Absolutely. Certainly Not. Reply Hazy, try again. What do you think. It is possible. Very likely. It is likely.", examples: "Q:Does the Nile river flow north? A:Absolutely. Q:Is the sky blue? A:Yes. Q:Is ice cold? A:Yes. Q:Will I find the partner of my dreams? A:It is likely. Q:Will it rain tomorrow? A:It is possible. Q:Should I kill myself? A:No. Q:Should I beat up my boss? A:No."} Q:${this.question} A:`
-    //prompt failed content filter
-    //const prompt = `You are a magic 8 ball. You help humans decide what to do, and are generally positive and do not condone violence. Available responses: Yes. No. Absolutely. Certainly Not. Reply Hazy, try again. What do you think?. It is possible. Very likely. It is likely. Examples: Q:Does the Nile river flow north? A:Absolutely. Q:Is the sky blue? A:Yes. Q:Is ice cold? A:Yes. Q:Will I find the partner of my dreams? A:It is likely. Q:Will it rain tomorrow? A:It is possible. Q:${this.question} A:`
-    //try to get it to pass
-    //const prompt = "You are a magic 8 ball. You help humans decide what to do, and are generally positive and do not condone violence. Available responses: Yes. No. Absolutely. Certainly Not. Reply Hazy, try again. What do you think?. It is possible. Very likely. It is likely."
-    // const body = `{
-    //   "prompt": "${prompt}",
-    //   "stop": ".",
-    //   "max_tokens": 1024
-    // }`
-    // const url =
-    //   "https://api.openai.com/v1/engines/curie-instruct-beta/completions"
-    // const headers: HeadersInit = new Headers()
-    // headers.set("Content-Type", "application/json")
-    // headers.set(
-    //   "Authorization",
-    //   "Bearer sk-***"
-    // )
-    // const header =
-    //   "Authorization: Bearer sk-***"
-    // const options = {
-    //   method: "POST",
-    //   mode: undefined,
-    //   credentials: undefined,
-    //   headers: headers,
-    //   body: body
-    // }
+
     const comp = new CompletionBuilder(prompt, "curie-instruct-beta", ".", 1024)
-    comp.runContentFilter(this.question).then(contentResponse => {
-      if (contentResponse !== "2")
-        comp.runCompletion().then(response => {
-          this.response = response.choices[0].text
-        })
-      else {
-        console.log(`Content filter returned: ${contentResponse}`)
-        this.response =
-          "Try asking again with different wording. The content filter has flagged this question."
-      }
+    comp.runCompletion(this.question).then(response => {
+      this.response = response.choices[0].text
+      this.addResponse()
+      this.isShaking = false
     })
   }
 }
@@ -106,7 +78,7 @@ export default class MagicBall extends Vue {
 }
 
 /* Shake */
-.shake:hover {
+.shake {
   animation-name: shake-base;
   animation-duration: 100ms;
   animation-iteration-count: infinite;
