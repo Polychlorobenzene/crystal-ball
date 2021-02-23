@@ -4,6 +4,13 @@
 ```
 npm install
 ```
+create file called secret.ts in the root (it will be ignored by git)
+```
+export const Secret = {
+  key: "sk-key-provided-by-openAI"
+}
+
+```
 
 ### Compiles and hot-reloads for development
 ```
