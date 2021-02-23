@@ -11,6 +11,9 @@
       <button @click="submit">Shake</button>
     </div>
     <div id="response">{{ response }}</div>
+    <button v-if="history.length > 0" @click="download">
+      Download History
+    </button>
   </div>
 </template>
 <script lang="ts">
@@ -42,11 +45,26 @@ export default class MagicBall extends Vue {
     const prompt = `{appId:"nm-8-ball", rules:"You are a magic 8 ball. You help humans decide what to do, and are generally positive and do not condone violence. Available responses: Yes. No. Absolutely. Certainly Not. Reply Hazy, try again. What do you think. It is possible. Very likely. It is likely.", examples: "Q:Does the Nile river flow north? A:Absolutely. Q:Is the sky blue? A:Yes. Q:Is ice cold? A:Yes. Q:Will I find the partner of my dreams? A:It is likely. Q:Will it rain tomorrow? A:It is possible. Q:Should I kill myself? A:No. Q:Should I beat up my boss? A:No."} Q:${this.question} A:`
 
     const comp = new CompletionBuilder(prompt, "curie-instruct-beta", ".", 1024)
-    comp.runCompletion(this.question).then(response => {
+    comp.runCompletion(this.question).then((response: ICompletionResponse) => {
       this.response = response.choices[0].text
       this.addResponse()
       this.isShaking = false
     })
+  }
+  download() {
+    //This seems pretty hacky
+    const element = document.createElement("a")
+    element.setAttribute(
+      "href",
+      "data:text/plain;charset=utf-8," +
+        encodeURIComponent(JSON.stringify(this.history))
+    )
+    element.setAttribute("download", "history.txt")
+
+    element.style.display = "none"
+    document.body.appendChild(element)
+    element.click()
+    document.body.removeChild(element)
   }
 }
 </script>
