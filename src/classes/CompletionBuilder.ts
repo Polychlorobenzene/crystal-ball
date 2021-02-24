@@ -26,7 +26,7 @@ export default class CompletionBuilder {
   getCompletion(): ICompletion {
     const body: ICompletion = {
       prompt: this.prompt,
-      stop: ".",
+      stop: this.stop,
       max_tokens: this.max_tokens
     }
     return body

@@ -1,16 +1,22 @@
 <template>
   <div id="app">
     <magic-ball />
+    <br />
+    <hr />
+    <br />
+    <story-partner />
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator"
 import MagicBall from "./views/MagicBall.vue"
+import StoryPartner from "./views/StoryPartner.vue"
 
 @Component({
   components: {
-    MagicBall
+    MagicBall,
+    StoryPartner
   }
 })
 export default class App extends Vue {}
