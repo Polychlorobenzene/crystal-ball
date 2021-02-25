@@ -9,7 +9,7 @@
         id="prompt"
         name="prompt"
         rows="5"
-        cols="20"
+        cols="30"
         placeholder="I was walking down the street and suddenly..."
         v-model="prompt"
       ></textarea>
@@ -74,14 +74,13 @@ export default class StoryPartner extends Vue {
     }
   }
   submit() {
-    debugger
-    const prompt1 = `appId:"nm-story-partner", rules:"You are an imaginative writer that wants to work with people to write a story based on their input. You should respond in the same language as the prompt" examples: "I was walking down the street and suddenly the sky went dark with a cloud of starlings swooping overhead. I looked up and saw that the swirling birds were coalescing around an old gnarled oak that seemed out of place on the corner. I could barely make out the outline of a door on the trunk and started to walk toward it. As I approached I could see the glimmer of light escaping from under the door.", prompt:${this.prompt}`
-    const prompt2 = `appId:"nm-story-partner",prompt:${this.prompt}`
+    const prompt1 = `appId:"nm-story-partner", rules:"You are an imaginative writer that wants to work with people to write a story based on their input. You should respond in the same language as the prompt", examples: "I was walking down the street and suddenly the sky went dark with a cloud of starlings swooping overhead. I looked up and saw that the swirling birds were coalescing around an old gnarled oak that seemed out of place on the corner. I could barely make out the outline of a door on the trunk and started to walk toward it. As I approached I could see the glimmer of light escaping from under the door.", prompt:${this.prompt}`
+    const prompt2 = `appId:"nm-story-partner", rules:"You are an imaginative writer that wants to work with people to write a story based on their input. You should respond in the same language as the prompt",prompt:${this.prompt}`
 
     const comp = new CompletionBuilder(
       this.history.length > 0 ? prompt2 : prompt1,
       "curie-instruct-beta",
-      "\n",
+      "\n\n\n",
       512
     )
     comp.runCompletion(this.prompt).then((response: ICompletionResponse) => {
