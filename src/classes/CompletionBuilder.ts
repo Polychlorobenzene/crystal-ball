@@ -26,7 +26,7 @@ export default class CompletionBuilder {
   getCompletion(): ICompletion {
     const body: ICompletion = {
       prompt: this.prompt,
-      stop: ".",
+      stop: this.stop,
       max_tokens: this.max_tokens
     }
     return body
@@ -91,7 +91,7 @@ export default class CompletionBuilder {
             completionResponse.choices = [
               {
                 text:
-                  "Try asking again with different wording. The content filter has flagged this question.",
+                  "Try again with different wording. The content filter has flagged the content you provided.",
                 index: 0,
                 logprobs: null,
                 finish_reason: "failed content filter"

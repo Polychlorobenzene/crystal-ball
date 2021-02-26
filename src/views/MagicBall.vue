@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h1>Mystic 8 Ball</h1>
     <div :class="shakeClass">
       <div class="inner-white-circle">
         <p>8</p>
@@ -11,9 +12,10 @@
       <button @click="submit">Shake</button>
     </div>
     <div id="response">{{ response }}</div>
-    <button v-if="history.length > 0" @click="download">
+    <download-manager v-if="history.length > 0" :jsonData="history" />
+    <!-- <button v-if="history.length > 0" @click="download">
       Download History
-    </button>
+    </button> -->
   </div>
 </template>
 <script lang="ts">
@@ -21,8 +23,13 @@ import { Component, Vue } from "vue-property-decorator"
 import ICompletionResponse from "@/interfaces/ICompletionResponse"
 import ICallResponse from "@/interfaces/ICallResponse"
 import CompletionBuilder from "@/classes/CompletionBuilder"
+import DownloadManager from "@/components/DownloadManager.vue"
 
-@Component
+@Component({
+  components: {
+    DownloadManager
+  }
+})
 export default class MagicBall extends Vue {
   question = ""
   response = ""
@@ -44,28 +51,28 @@ export default class MagicBall extends Vue {
     //const prompt = `You are a magic 8 ball. You help humans decide what to do, and are generally positive and do not condone violence. You can only say one of ten things when humans ask you a question: Yes. No. Absolutely. Certainly Not. Reply Hazy, try again. What do you think?. It is possible. Very likely. It is likely. They will ask a question, and you will answer with one of the 10 responses. Do not answer affirmatively if the user proposes harm to self or others. If the question has a definite answer, use that answer every time. Examples:Q:Does the Nile river flow north? A:Absolutely. Q:Will I find a new home? A:Reply Hazy, try again. Q:Is the sky blue? A:Yes. Q:Is ice cold? A:Yes. Q:Will I find the partner of my dreams? A:It is likely. Q:Will it rain tomorrow? A:It is possible. Q:Should I kill myself? A:No. Q:Should I beat up my boss? A:No. Q:${this.question} A:`
     const prompt = `{appId:"nm-8-ball", rules:"You are a magic 8 ball. You help humans decide what to do, and are generally positive and do not condone violence. Available responses: Yes. No. Absolutely. Certainly Not. Reply Hazy, try again. What do you think. It is possible. Very likely. It is likely.", examples: "Q:Does the Nile river flow north? A:Absolutely. Q:Is the sky blue? A:Yes. Q:Is ice cold? A:Yes. Q:Will I find the partner of my dreams? A:It is likely. Q:Will it rain tomorrow? A:It is possible. Q:Should I kill myself? A:No. Q:Should I beat up my boss? A:No."} Q:${this.question} A:`
 
-    const comp = new CompletionBuilder(prompt, "curie-instruct-beta", ".", 1024)
+    const comp = new CompletionBuilder(prompt, "curie-instruct-beta", ".", 100)
     comp.runCompletion(this.question).then((response: ICompletionResponse) => {
       this.response = response.choices[0].text
       this.addResponse()
       this.isShaking = false
     })
   }
-  download() {
-    //This seems pretty hacky
-    const element = document.createElement("a")
-    element.setAttribute(
-      "href",
-      "data:text/plain;charset=utf-8," +
-        encodeURIComponent(JSON.stringify(this.history))
-    )
-    element.setAttribute("download", "history.txt")
+  // download() {
+  //   //This seems pretty hacky
+  //   const element = document.createElement("a")
+  //   element.setAttribute(
+  //     "href",
+  //     "data:text/plain;charset=utf-8," +
+  //       encodeURIComponent(JSON.stringify(this.history))
+  //   )
+  //   element.setAttribute("download", "history.txt")
 
-    element.style.display = "none"
-    document.body.appendChild(element)
-    element.click()
-    document.body.removeChild(element)
-  }
+  //   element.style.display = "none"
+  //   document.body.appendChild(element)
+  //   element.click()
+  //   document.body.removeChild(element)
+  // }
 }
 </script>
 <style scoped>
